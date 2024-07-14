@@ -6,6 +6,18 @@ import (
 	"sync"
 )
 
+type TCPPeer struct {
+	// conn is the underlying connection of the peer
+	conn net.Conn
+	// if we dial and retrieve a conn => outbound == true
+	// if we accept and retrieve a conn => outbound == false
+	outbound bool
+}
+
+func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer {
+	return &TCPPeer{conn, outbound}
+}
+
 type TCPTransport struct {
 	listenAddress string
 	listener      net.Listener
@@ -40,9 +52,13 @@ func (t *TCPTransport) startAcceptLoop() {
 		if err != nil {
 			fmt.Printf("TCP accept error:  %s\n", err)
 		}
+
+		go t.handleConnection(conn)
 	}
 }
 
-func (t *TCPTransport) handleConnect(conn net.Conn) {
+func (t *TCPTransport) handleConnection(conn net.Conn) {
+	peer := NewTCPPeer(conn, true)
+	fmt.Printf("new incoming connection %+v\n", peer)
 
 }
